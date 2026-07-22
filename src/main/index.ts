@@ -992,7 +992,7 @@ const createOrShowSettingsWindow = (): void => {
   settingsWindow.on("ready-to-show", () => {
     settingsWindow.show();
     // Open the DevTools.
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.YTM_OPEN_DEVTOOLS === "1") {
       settingsWindow.webContents.openDevTools({
         mode: "detach"
       });
@@ -1325,7 +1325,7 @@ const createMainWindow = (): void => {
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
     // Open the DevTools.
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.YTM_OPEN_DEVTOOLS === "1") {
       mainWindow.webContents.openDevTools({
         mode: "detach"
       });
@@ -1593,7 +1593,7 @@ app.on("ready", async () => {
         width: mainWindow.getContentBounds().width,
         height: mainWindow.getContentBounds().height - 36
       });
-      if (process.env.NODE_ENV === "development") {
+      if (process.env.YTM_OPEN_DEVTOOLS === "1") {
         ytmView.webContents.openDevTools({
           mode: "detach"
         });
