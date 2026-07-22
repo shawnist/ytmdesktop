@@ -1342,6 +1342,9 @@ const createMainWindow = (): void => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", async () => {
   log.info("Application ready");
+  if (process.platform === "darwin" && app.dock) {
+    app.dock.setIcon(getIconPath("ytmd.png"));
+  }
 
   // First run checks
   const firstRunPath = path.join(app.getPath("userData"), ".first-run");
