@@ -29,6 +29,7 @@ import playerStateStore, { PlayerState, VideoState } from "./player-state-store"
 import { MemoryStoreSchema, StoreSchema, TrayIconStyle } from "../shared/store/schema";
 
 import CompanionServer from "./integrations/companion-server";
+import BridgeHost from "./integrations/bridge-host";
 import CustomCSS from "./integrations/custom-css";
 import DiscordPresence from "./integrations/discord-presence";
 import LastFM from "./integrations/last-fm";
@@ -162,11 +163,19 @@ const builtMenu = isDarwin ? Menu.buildFromTemplate(template) : null; // null fo
 Menu.setApplicationMenu(builtMenu);
 
 const companionServer = new CompanionServer();
+const bridgeHost = new BridgeHost();
 const customCss = new CustomCSS();
 const discordPresence = new DiscordPresence();
 const lastFMScrobbler = new LastFM();
 const nowPlayingNotifications = new NowPlayingNotifications();
 const ratioVolume = new VolumeRatio();
+
+const executeBridgeCommand = async (command: string, data: Record<string, unknown>): Promise<void> => {
+  if (!ytmView) throw new Error("YouTube Music view is not ready");
+  const remoteCommand = command === "seek" ? "seekTo" : command === "like" ? "toggleLike" : command === "dislike" ? "toggleDislike" : command;
+  ytmView.webContents.send("remoteControl:execute", remoteCommand, data.position_seconds ?? data.position ?? null);
+};
+playerStateStore.addEventListener(() => bridgeHost.notifyStateChanged());
 
 const ytmViewIntegrationScripts: { [name: string]: { [name: string]: string } } = {};
 
@@ -1031,6 +1040,8 @@ const createYTMView = (): void => {
     }
   });
   companionServer.provide(store, memoryStore, ytmView);
+  bridgeHost.provide(() => playerStateStore.getState(), executeBridgeCommand);
+  void bridgeHost.enable();
   customCss.provide(store, ytmView);
   ratioVolume.provide(ytmView);
 
